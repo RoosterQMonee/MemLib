@@ -157,6 +157,7 @@
     <ClCompile Include="MemLib\MinHook\trampoline.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="MemLib\Events.h" />
     <ClInclude Include="MemLib\Helpers.h" />
     <ClInclude Include="MemLib\Hooks.h" />
     <ClInclude Include="MemLib\MemLib.h" />

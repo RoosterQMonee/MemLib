@@ -8,3 +8,4 @@
 #include "Module.h"
 #include "Helpers.h"
 #include "Hooks.h"
+#include "Events.h"

@@ -10,6 +10,13 @@ std::shared_ptr<MemLib::Hook<MemLib::DirectAddress>> actor_hook;
 
 class Actor;
 
+struct MyEvent : public MemLib::CancellableEvent {
+    int data;
+
+    MyEvent(int d) : data(d) {}
+};
+
+
 void ActorBaseTickHk(Actor* act) {
     std::cout << "Actor::BaseTick called!" << std::endl;
     MemLib::call_func<void, Actor*>(
@@ -28,8 +35,6 @@ void Main() {
     HANDLE hConOut = CreateFile(L"CONOUT$", GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
     SetStdHandle(STD_OUTPUT_HANDLE, hConOut);
     SetConsoleTitleA("Debug Console");
-
-    std::cout << "Allocated Console" << std::endl;
 
     printf("CPU Features: %s\n", MemLib::scanner.get_detected_cpu_features().c_str());
 
@@ -108,9 +113,9 @@ void Main() {
                   << "\nRVA: " << std::hex << sresult.rva
                   << "\nSymbol: " << sresult.symbolName << std::endl;
 
-        typedef int (WINAPI* MyFunction)(HWND, LPCSTR, LPCSTR, UINT);
-        MyFunction myFunction = (MyFunction)sresult.rva;
-        (*myFunction)(0, "MessageBoxA from MemLib!", 0, 0);
+        //typedef int (WINAPI* MyFunction)(HWND, LPCSTR, LPCSTR, UINT);
+        //MyFunction myFunction = (MyFunction)sresult.rva;
+        //(*myFunction)(0, "MessageBoxA from MemLib!", 0, 0);
     }
 
     // Hook functions
@@ -130,13 +135,14 @@ void Main() {
 
         uintptr_t base = reinterpret_cast<uintptr_t>(scan.value().address);
         int offset = *reinterpret_cast<int*>(base + 3);
-        auto** vft = reinterpret_cast<uintptr_t**>(base + offset + 7);
+        uintptr_t** vft = reinterpret_cast<uintptr_t**>(base + offset + 7);
 
         printf("Vft[24] at: %p\n", vft[24]);
 
         actor_hook = hm.AddHook<MemLib::DirectAddress>("Actor::BaseTick", (PDWORD)vft[24], &ActorBaseTickHk);
         hm.EnableAll((void*)scan.value().module_base, 0);
     }
+
 }
 
 

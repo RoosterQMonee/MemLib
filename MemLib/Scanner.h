@@ -23,7 +23,7 @@ namespace MemLib {
 
     struct ScanResult {
         std::string_view signature_name;
-        void* address;
+        uintptr_t address;
         size_t module_base;
         size_t module_size;
     };
@@ -51,8 +51,7 @@ namespace MemLib {
 
     private:
         static std::pair<std::string_view, std::string_view>
-            parse_signature(const char* str) {
-            std::string pattern_str(str);
+        parse_signature(std::string pattern_str) {
             size_t pos = 0;
             std::string mask_str;
 
@@ -85,7 +84,7 @@ namespace MemLib {
         }
 
     private:
-        std::optional<ScanResult> scan_with_avx512(const char* pattern_str,
+        std::optional<ScanResult> scan_with_avx512(std::string pattern_str,
             const void* base_addr,
             size_t length) {
             auto [pattern, mask] = parse_signature(pattern_str);
@@ -116,8 +115,7 @@ namespace MemLib {
                     free_aligned(pattern_bytes);
                     return ScanResult{
                         .signature_name = pattern.substr(match_pos, pattern.length()),
-                        .address = reinterpret_cast<void*>(
-                            reinterpret_cast<uintptr_t>(mem_ptr) + match_pos),
+                        .address = reinterpret_cast<uintptr_t>(mem_ptr + match_pos),
                         .module_base = reinterpret_cast<uintptr_t>(base_addr),
                         .module_size = length
                     };
@@ -133,10 +131,10 @@ namespace MemLib {
         }
 
     private:
-        std::optional<ScanResult> scan_with_avx2(const char* pattern_str,
+        std::optional<ScanResult> scan_with_avx2(std::string pattern_str,
             const void* base_addr,
             size_t length) {
-            if (!pattern_str || !base_addr || length == 0) {
+            if (pattern_str.empty() || !base_addr || length == 0) {
                 return std::nullopt;
             }
 
@@ -170,8 +168,7 @@ namespace MemLib {
 
                     ScanResult sr = ScanResult{
                         .signature_name = pattern.substr(match_pos, pattern.length()),
-                        .address = reinterpret_cast<void*>(
-                            reinterpret_cast<uintptr_t>(mem_ptr) + match_pos),
+                        .address = reinterpret_cast<uintptr_t>(mem_ptr + match_pos),
                         .module_base = reinterpret_cast<uintptr_t>(base_addr),
                         .module_size = length
                     };
@@ -190,10 +187,10 @@ namespace MemLib {
         }
 
     private:
-        std::optional<ScanResult> scan_with_sse(const char* pattern_str,
+        std::optional<ScanResult> scan_with_sse(std::string pattern_str,
             const void* base_addr,
             size_t length) {
-            if (!pattern_str || !base_addr || length == 0) {
+            if (pattern_str.empty() || !base_addr || length == 0) {
                 return std::nullopt;
             }
 
@@ -234,8 +231,7 @@ namespace MemLib {
 
                     ScanResult result = {
                         .signature_name = pattern.substr(match_pos, pattern_size - match_pos),
-                        .address = reinterpret_cast<void*>(
-                            reinterpret_cast<uintptr_t>(mem_ptr) + match_pos),
+                        .address = reinterpret_cast<uintptr_t>(mem_ptr + match_pos),
                         .module_base = reinterpret_cast<uintptr_t>(base_addr),
                         .module_size = length
                     };
@@ -254,7 +250,7 @@ namespace MemLib {
         }
 
     private:
-        static auto scan_fallback(const char* signature,
+        static auto scan_fallback(std::string signature,
             const void* base_addr,
             size_t length)
         {
@@ -278,7 +274,7 @@ namespace MemLib {
 
             HMODULE gameModule = (HMODULE)base_addr;
             auto* const scanBytes = reinterpret_cast<uint8_t*>(gameModule);
-            const auto pattern = pattern_to_byte(signature);
+            const auto pattern = pattern_to_byte(signature.c_str());
             const auto end = scanBytes + length;
 
             auto it = std::search(std::execution::par, scanBytes, end, pattern.cbegin(), pattern.cend(),
@@ -289,7 +285,7 @@ namespace MemLib {
             auto ret = it != end ? (uintptr_t)it : 0u;
             return ScanResult{
                 .signature_name = "fallback",
-                .address = reinterpret_cast<void*>(ret),
+                .address = ret,
                 .module_base = reinterpret_cast<uintptr_t>(base_addr),
                 .module_size = length
             };
@@ -300,7 +296,7 @@ namespace MemLib {
             detected_is = detect_instruction_set();
         }
 
-        std::optional<ScanResult> scan_pattern(const char* pattern_str,
+        std::optional<ScanResult> scan_pattern(std::string pattern_str,
             const void* base_addr,
             size_t length) {
             switch (detected_is) {
@@ -317,7 +313,7 @@ namespace MemLib {
         }
 
         template <InstructionSet T>
-        std::optional<ScanResult> custom_scan_pattern(const char* pattern_str,
+        std::optional<ScanResult> custom_scan_pattern(std::string pattern_str,
             const void* base_addr,
             size_t length) {
             switch (T) {

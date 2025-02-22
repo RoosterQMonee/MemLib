@@ -41,44 +41,44 @@ namespace MemLib {
     public:
         void* originalFunction{};
 
-        Hook(char* name, char* pattern, PDWORD address, void* hookFunction)
-            : hookType(T), _pattern(pattern), _address(reinterpret_cast<void*>(address)),
+        Hook(std::string name, std::string pattern, uintptr_t* address, void* hookFunction)
+            : hookType(T), _pattern(pattern), _address(address),
             hookedFunction(hookFunction), _name(name) {
-            printf("[%s] Created Hook\n", _name);
+            printf("[%s] Created Hook\n", _name.c_str());
         }
 
         virtual ~Hook() { this->Disable(); }
 
         virtual void Enable(const void* base, size_t module_length) override {
             if (T == HookType::Independent) {
-                printf("[%s] Independent function missing Enable()!\n", _name);
+                printf("[%s] Independent function missing Enable()!\n", _name.c_str());
                 return;
             }
 
-            void* targetAddress = _address;
+            void* targetAddress = reinterpret_cast<void*>(_address);
             std::optional<MemLib::ScanResult> result{};
 
             if (T == HookType::Signature) {
                 std::optional<MemLib::ScanResult> scan = MemLib::scanner.scan_pattern(_pattern, base, module_length);
                 if (!scan.has_value()) {
-                    printf("[%s] Failed to scan!\n", _name);
+                    printf("[%s] Failed to scan!\n", _name.c_str());
                     return;
                 } else if (scan.value().address == 0) {
-                    printf("[%s] Couldn't find signature!\n", _name);
+                    printf("[%s] Couldn't find signature!\n", _name.c_str());
                     return;
                 }
-                targetAddress = scan.value().address;
+                targetAddress = reinterpret_cast<void*>(scan.value().address + _address);
             }
 
             MH_STATUS ret = MH_CreateHook(targetAddress, hookedFunction, &originalFunction);
             if (ret != MH_OK) {
-                printf("[%s] Failed to create hook! (%d)\n", _name, ret);
+                printf("[%s] Failed to create hook! (%d)\n", _name.c_str(), ret);
                 return;
             }
 
             ret = MH_EnableHook(targetAddress);
             if (ret != MH_OK) {
-                printf("[%s] Failed to enable hook! (%d)\n", _name, ret);
+                printf("[%s] Failed to enable hook! (%d)\n", _name.c_str(), ret);
                 return;
             }
 
@@ -99,9 +99,9 @@ namespace MemLib {
 
     private:
         void* hookedFunction{};
-        char* _pattern{};
-        char* _name{};
-        void* _address{};
+        std::string _pattern{};
+        std::string _name{};
+        uintptr_t* _address{};
 
         HookType hookType{};
     };
@@ -109,45 +109,12 @@ namespace MemLib {
 
 	class HookManager {
 	public:
-		template <HookType T>
-		std::shared_ptr<Hook<T>> AddHook(const char* name, PDWORD address = 0, void* hookedFunc = nullptr) {
-            auto hook = std::make_shared<Hook<T>>(
-                const_cast<char*>(name),
-                (char*)"",
-                address,
-                hookedFunc);
-            hooks_.push_back(hook);
-            return hook;
-		}
-
         template <HookType T>
-        std::shared_ptr<Hook<T>> AddHook(const char* name, char* pattern = "", void* hookedFunc = nullptr) {
+        std::shared_ptr<Hook<T>> AddHook(std::string name, std::string pattern = "", uintptr_t* offset = 0, void* hookedFunc = nullptr) {
             auto hook = std::make_shared<Hook<T>>(
-                const_cast<char*>(name),
-                pattern,
-                (PDWORD)0,
-                hookedFunc);
-            hooks_.push_back(hook);
-            return hook;
-        }
-
-        template <HookType T>
-        std::shared_ptr<Hook<T>> AddHook(const char* name, const char* pattern = "", void* hookedFunc = nullptr) {
-            auto hook = std::make_shared<Hook<T>>(
-                const_cast<char*>(name),
-                const_cast<char*>(pattern),
-                (PDWORD)0,
-                hookedFunc);
-            hooks_.push_back(hook);
-            return hook;
-        }
-
-        template <HookType T>
-        std::shared_ptr<Hook<T>> AddHook(const char* name, void* hookedFunc = nullptr) {
-            auto hook = std::make_shared<Hook<T>>(
-                const_cast<char*>(name),
-                const_cast<char*>(""),
-                (PDWORD)0,
+                name.empty() ? "" : name.c_str(),
+                pattern.empty() ? "" : pattern.c_str(),
+                offset,
                 hookedFunc);
             hooks_.push_back(hook);
             return hook;

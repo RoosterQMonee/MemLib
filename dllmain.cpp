@@ -10,13 +10,6 @@ std::shared_ptr<MemLib::Hook<MemLib::DirectAddress>> actor_hook;
 
 class Actor;
 
-struct MyEvent : public MemLib::CancellableEvent {
-    int data;
-
-    MyEvent(int d) : data(d) {}
-};
-
-
 void ActorBaseTickHk(Actor* act) {
     std::cout << "Actor::BaseTick called!" << std::endl;
     MemLib::call_func<void, Actor*>(
@@ -133,13 +126,13 @@ void Main() {
     else {
         printf("Found signature at: %p\n", scan.value().address);
 
-        uintptr_t base = reinterpret_cast<uintptr_t>(scan.value().address);
+        uintptr_t base = scan.value().address;
         int offset = *reinterpret_cast<int*>(base + 3);
         uintptr_t** vft = reinterpret_cast<uintptr_t**>(base + offset + 7);
 
         printf("Vft[24] at: %p\n", vft[24]);
 
-        actor_hook = hm.AddHook<MemLib::DirectAddress>("Actor::BaseTick", (PDWORD)vft[24], &ActorBaseTickHk);
+        actor_hook = hm.AddHook<MemLib::DirectAddress>("Actor::BaseTick", "", vft[24], &ActorBaseTickHk);
         hm.EnableAll((void*)scan.value().module_base, 0);
     }
 }

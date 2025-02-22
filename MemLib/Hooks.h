@@ -193,4 +193,8 @@ namespace MemLib {
 	private:
 		std::vector<std::shared_ptr<HookBase>> hooks_ = std::vector<std::shared_ptr<HookBase>>();
 	};
+
+    using SignatureHook = Hook<MemLib::HookType::Signature>;
+    using DirectHook = Hook<MemLib::HookType::DirectAddress>;
+    using IndependentHook = Hook<MemLib::HookType::Independent>;
 }

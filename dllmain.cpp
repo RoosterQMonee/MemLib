@@ -142,7 +142,6 @@ void Main() {
         actor_hook = hm.AddHook<MemLib::DirectAddress>("Actor::BaseTick", (PDWORD)vft[24], &ActorBaseTickHk);
         hm.EnableAll((void*)scan.value().module_base, 0);
     }
-
 }
 
 

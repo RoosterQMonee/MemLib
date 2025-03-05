@@ -1,0 +1,5 @@
+# ninja log v6
+10	32	7628354492500967	E:/CLProjects/MemLib/cmake-build-debug/CMakeFiles/cmake.verify_globs	9a64762dd27a7597
+35	1522	7628354492753807	CMakeFiles/MemLib.dir/source/MemLib.cpp.obj	21047a41983e091a
+1522	1618	7628354508458040	libMemLib.dll	de98aca1d6d631f5
+1522	1618	7628354508458040	libMemLib.dll.a	de98aca1d6d631f5

@@ -49,13 +49,13 @@ cmake_ninja_workdir = E$:/CLProjects/MemLib/cmake-build-release/
 
 build cmake_object_order_depends_target_MemLib: phony || cmake_object_order_depends_target_minhook
 
-build CMakeFiles/MemLib.dir/source/MemLib.cpp.obj: CXX_COMPILER__MemLib_unscanned_Release E$:/CLProjects/MemLib/source/MemLib.cpp || cmake_object_order_depends_target_MemLib
+build CMakeFiles/MemLib.dir/example/MemLib.cpp.obj: CXX_COMPILER__MemLib_unscanned_Release E$:/CLProjects/MemLib/example/MemLib.cpp || cmake_object_order_depends_target_MemLib
   DEFINES = -DMemLib_EXPORTS
-  DEP_FILE = CMakeFiles\MemLib.dir\source\MemLib.cpp.obj.d
+  DEP_FILE = CMakeFiles\MemLib.dir\example\MemLib.cpp.obj.d
   FLAGS = -O3 -DNDEBUG -std=c++23 -fno-keep-inline-dllexport -fdiagnostics-color=always
   INCLUDES = -IE:/CLProjects/MemLib/include -I/include -IE:/CLProjects/MemLib/cmake-build-release/_deps/minhook-src/include
   OBJECT_DIR = CMakeFiles\MemLib.dir
-  OBJECT_FILE_DIR = CMakeFiles\MemLib.dir\source
+  OBJECT_FILE_DIR = CMakeFiles\MemLib.dir\example
 
 
 # =============================================================================
@@ -65,7 +65,7 @@ build CMakeFiles/MemLib.dir/source/MemLib.cpp.obj: CXX_COMPILER__MemLib_unscanne
 #############################################
 # Link the shared module MemLib.dll
 
-build MemLib.dll: CXX_MODULE_LIBRARY_LINKER__MemLib_Release CMakeFiles/MemLib.dir/source/MemLib.cpp.obj | _deps/minhook-build/minhook.x64.a || _deps/minhook-build/minhook.x64.a
+build MemLib.dll: CXX_MODULE_LIBRARY_LINKER__MemLib_Release CMakeFiles/MemLib.dir/example/MemLib.cpp.obj | _deps/minhook-build/minhook.x64.a || _deps/minhook-build/minhook.x64.a
   LANGUAGE_COMPILE_FLAGS = -O3 -DNDEBUG
   LINK_LIBRARIES = _deps/minhook-build/minhook.x64.a  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
   OBJECT_DIR = CMakeFiles\MemLib.dir

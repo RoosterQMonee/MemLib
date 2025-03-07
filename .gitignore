@@ -2,4 +2,5 @@
 /.vscode
 /cpm_modules
 .DS_Store
-/cmake-build*
+/cmake-build-release
+/cmake-build-debug

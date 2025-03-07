@@ -52,6 +52,45 @@ namespace MemLib {
    * @brief A class containing basic utilities for modules
    */
   class Module {
+  public:
+    /**
+     * @brief Get the base of a module
+     * @param module_name The module to read
+     * @return The size of the module, std::nullopt if the module isn't found
+     */
+    static std::optional<MemLib::Types::UL64> get_module_base(const std::string& module_name) {
+      HMODULE hModule = GetModuleHandleA(module_name.c_str());
+      if (!hModule) {
+        return std::nullopt;
+      }
+      return reinterpret_cast<MemLib::Types::UL64>(hModule);
+    }
+
+    /**
+     * @brief Get the size of a module
+     * @param module_name The module to read
+     * @return The size of the module, std::nullopt if the module isn't found
+     */
+    static std::optional<MemLib::Types::UL64> get_module_size(const std::string& module_name) {
+      HMODULE hModule = GetModuleHandleA(module_name.c_str());
+      if (!hModule) return std::nullopt;
+
+      DWORD size = 0;
+      MEMORY_BASIC_INFORMATION mbi;
+
+      for (MemLib::Types::UL64 addr = reinterpret_cast<MemLib::Types::UL64>(hModule);
+          VirtualQuery(reinterpret_cast<LPCVOID>(addr), &mbi, sizeof(mbi)) == sizeof(mbi);
+          addr += mbi.RegionSize) {
+        if (mbi.AllocationBase == hModule &&
+            mbi.State == MEM_COMMIT &&
+            mbi.Protect != PAGE_NOACCESS) {
+          size += mbi.RegionSize;
+            }
+          }
+
+      return size;
+    }
+
     /**
      * @brief Find an export from a module by a string
      * @param peBase The base address of the module
